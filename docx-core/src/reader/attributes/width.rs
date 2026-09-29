@@ -14,8 +14,10 @@ pub fn read_width(attrs: &[OwnedAttribute]) -> Result<(isize, WidthType), Reader
         if local_name == "type" {
             width_type = WidthType::from_str(&a.value)?;
         } else if local_name == "w" {
-            let v = a.value.replace('%', "");
-            w = f64::from_str(&v).expect("should read width.") as isize;
+            w = match a.value.strip_suffix('%') {
+                Some(percent) => f64::from_str(percent)? as isize,
+                None => super::value_to_dax(&a.value)? as isize,
+            };
         }
     }
     Ok((w, width_type))

@@ -10,13 +10,13 @@ pub fn read_line_spacing(attributes: &[OwnedAttribute]) -> Result<LineSpacing, R
         let local_name = &a.name.local_name;
         match local_name.as_str() {
             "before" => {
-                spacing = spacing.before(f64::from_str(&a.value)? as u32);
+                spacing = spacing.before(super::value_to_dax(&a.value)? as u32);
             }
             "after" => {
-                spacing = spacing.after(f64::from_str(&a.value)? as u32);
+                spacing = spacing.after(super::value_to_dax(&a.value)? as u32);
             }
             "line" => {
-                spacing = spacing.line(f64::from_str(&a.value)? as i32);
+                spacing = spacing.line(super::value_to_dax(&a.value)?);
             }
             "lineRule" => {
                 spacing = spacing.line_rule(LineSpacingType::from_str(&a.value)?);
