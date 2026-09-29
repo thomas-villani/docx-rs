@@ -331,12 +331,13 @@ pub fn read_docx_with_options(buf: &[u8], options: ReadDocxOptions) -> Result<Do
     let style_path = rels.target_paths(STYLE_RELATIONSHIP_TYPE);
     if let Some(paths) = style_path {
         if let Some((_, style_path, ..)) = paths.first() {
-            let data = read_zip(
+            if let Some(data) = read_zip_if_exists(
                 &mut archive,
                 style_path.to_str().expect("should have styles"),
-            )?;
-            let styles = Styles::from_xml(&data[..])?;
-            docx = docx.styles(styles);
+            )? {
+                let styles = Styles::from_xml(&data[..])?;
+                docx = docx.styles(styles);
+            }
         }
     }
 
@@ -344,12 +345,13 @@ pub fn read_docx_with_options(buf: &[u8], options: ReadDocxOptions) -> Result<Do
     let num_path = rels.target_paths(NUMBERING_RELATIONSHIP_TYPE);
     if let Some(paths) = num_path {
         if let Some((_, num_path, ..)) = paths.first() {
-            let data = read_zip(
+            if let Some(data) = read_zip_if_exists(
                 &mut archive,
                 num_path.to_str().expect("should have numberings"),
-            )?;
-            let nums = Numberings::from_xml(&data[..])?;
-            docx = docx.numberings(nums);
+            )? {
+                let nums = Numberings::from_xml(&data[..])?;
+                docx = docx.numberings(nums);
+            }
         }
     }
 
@@ -357,12 +359,13 @@ pub fn read_docx_with_options(buf: &[u8], options: ReadDocxOptions) -> Result<Do
     let settings_path = rels.target_paths(SETTINGS_TYPE);
     if let Some(paths) = settings_path {
         if let Some((_, settings_path, ..)) = paths.first() {
-            let data = read_zip(
+            if let Some(data) = read_zip_if_exists(
                 &mut archive,
                 settings_path.to_str().expect("should have settings"),
-            )?;
-            let settings = Settings::from_xml(&data[..])?;
-            docx = docx.settings(settings);
+            )? {
+                let settings = Settings::from_xml(&data[..])?;
+                docx = docx.settings(settings);
+            }
         }
     }
 
@@ -370,14 +373,15 @@ pub fn read_docx_with_options(buf: &[u8], options: ReadDocxOptions) -> Result<Do
     let web_settings_path = rels.target_paths(WEB_SETTINGS_TYPE);
     if let Some(paths) = web_settings_path {
         if let Some((_, web_settings_path, ..)) = paths.first() {
-            let data = read_zip(
+            if let Some(data) = read_zip_if_exists(
                 &mut archive,
                 web_settings_path
                     .to_str()
                     .expect("should have web settings"),
-            )?;
-            let web_settings = WebSettings::from_xml(&data[..])?;
-            docx = docx.web_settings(web_settings);
+            )? {
+                let web_settings = WebSettings::from_xml(&data[..])?;
+                docx = docx.web_settings(web_settings);
+            }
         }
     }
     // Read media

@@ -26,6 +26,20 @@ pub fn read_zip(
     Ok(data)
 }
 
+/// Like [`read_zip`], but a part that is not in the package is `Ok(None)`.
+/// For optional parts, which a relationship may still point to after the
+/// part itself was removed.
+pub(crate) fn read_zip_if_exists(
+    archive: &mut zip::read::ZipArchive<Cursor<&[u8]>>,
+    name: &str,
+) -> Result<Option<Vec<u8>>, ReaderError> {
+    match read_zip(archive, name) {
+        Ok(data) => Ok(Some(data)),
+        Err(ReaderError::ZipError(zip::result::ZipError::FileNotFound)) => Ok(None),
+        Err(e) => Err(e),
+    }
+}
+
 /// OPC ZIP item names are ASCII (ECMA-376 Part 2, 7.3.3). An extra-field
 /// override must not silently redirect an ASCII relationship to another part.
 pub(crate) fn validate_ascii_part_names(
