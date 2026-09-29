@@ -11,7 +11,7 @@ use super::*;
 
 pub type RId = String;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct ReadDocumentRels {
     rels: BTreeMap<String, BTreeSet<(RId, PathBuf, Option<String>)>>,
 }
@@ -41,7 +41,14 @@ pub fn read_document_rels(
         .ok_or(ReaderError::DocumentRelsNotFoundError)?;
     let p = find_rels_filename(&main_path)?;
     let p = p.to_str().ok_or(ReaderError::DocumentRelsNotFoundError)?;
-    let data = read_zip(archive, p)?;
+    let data = match read_zip(archive, p) {
+        Ok(data) => data,
+        // A part without relationships has no relationships part (OPC).
+        Err(ReaderError::ZipError(zip::result::ZipError::FileNotFound)) => {
+            return Ok(ReadDocumentRels::default());
+        }
+        Err(e) => return Err(e),
+    };
     let rels = read_rels_xml(&data[..], dir)?;
     Ok(ReadDocumentRels { rels })
 }
