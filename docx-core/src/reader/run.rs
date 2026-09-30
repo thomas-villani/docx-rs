@@ -97,6 +97,16 @@ impl ElementReader for Run {
                                 XMLElement::CarriageReturn => {
                                     run = run.add_carriage_return();
                                 }
+                                XMLElement::FootnoteReference => {
+                                    // The note content is attached after footnotes.xml is read.
+                                    if let Some(id) = read(&attributes, "id")
+                                        .and_then(|id| usize::from_str(&id).ok())
+                                    {
+                                        run.children.push(RunChild::FootnoteReference(
+                                            FootnoteReference::new(id),
+                                        ));
+                                    }
+                                }
                                 XMLElement::Drawing => {
                                     if let Ok(drawing) = Drawing::read(r, &attributes) {
                                         run = run.add_drawing(drawing);
@@ -301,6 +311,22 @@ mod tests {
             Run {
                 children: vec![RunChild::CarriageReturn(CarriageReturn::new())],
                 run_property: RunProperty::default(),
+            }
+        );
+    }
+
+    #[test]
+    fn test_read_footnote_reference() {
+        let c = r#"<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:r><w:rPr><w:rStyle w:val="FootnoteReference"/></w:rPr><w:footnoteReference w:id="2"/></w:r>
+</w:document>"#;
+        let mut parser = EventReader::new(c.as_bytes());
+        let run = Run::read(&mut parser, &[]).unwrap();
+        assert_eq!(
+            run,
+            Run {
+                children: vec![RunChild::FootnoteReference(FootnoteReference::new(2))],
+                run_property: RunProperty::new().style("FootnoteReference"),
             }
         );
     }

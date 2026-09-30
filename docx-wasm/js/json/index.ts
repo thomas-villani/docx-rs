@@ -2,6 +2,7 @@ import { StylesJSON } from "./styles";
 import { DocumentJSON } from "./document";
 import { NumberingsJSON } from "./numbering";
 import { CommentJSON } from "./comment";
+import { ParagraphJSON } from "./paragraph";
 import { WebSettingsJSON } from "./web-settings";
 
 import { Theme as ThemeJSON } from "./bindings/Theme";
@@ -60,6 +61,15 @@ export type DocxJSON = {
    */
   images: [string, string, string, string][];
   hyperlinks: [string, string, string][];
+  footnotes: {
+    footnotes: FootnoteJSON[];
+  };
+};
+
+export type FootnoteJSON = {
+  id: number;
+  // Paragraph data without the { type: "paragraph" } wrapper.
+  content: ParagraphJSON["data"][];
 };
 
 export type SettingsJSON = {

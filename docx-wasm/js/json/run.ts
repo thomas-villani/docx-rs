@@ -79,7 +79,8 @@ export type RunChildJSON =
   | CommentRangeStartJSON
   | CommentRangeEndJSON
   | FieldCharJSON
-  | InstrTextStringJSON;
+  | InstrTextStringJSON
+  | FootnoteReferenceJSON;
 
 export type TextJSON = {
   type: "text";
@@ -158,4 +159,12 @@ export type InstrTextJSON = {
 export type InstrTextStringJSON = {
   type: "instrTextString";
   data: string;
+};
+
+// The note content is in DocxJSON.footnotes, matched by id.
+export type FootnoteReferenceJSON = {
+  type: "footnoteReference";
+  data: {
+    id: number;
+  };
 };

@@ -8,7 +8,8 @@ use std::collections::{HashMap, HashSet};
 
 use super::document_tree::{visit_document, visit_footer, visit_header, DocumentTreeVisitor};
 use crate::{
-    Document, Footer, Footnote, FootnoteReference, Header, ImageIdAndBuf, ImageIdAndPath, Pic,
+    Document, Footer, Footnote, FootnoteReference, Header, ImageIdAndBuf, ImageIdAndPath, Pic, Run,
+    RunChild,
 };
 
 /// Stores physical media once for the entire OPC package.
@@ -242,6 +243,34 @@ pub(crate) fn collect_document_footnotes(document: &mut Document) -> Vec<Footnot
     let mut collector = FootnoteCollector::default();
     visit_document(document, &mut collector);
     collector.footnotes
+}
+
+/// Attaches read footnote content to the references in the main document.
+///
+/// The reader parses `w:footnoteReference` before `footnotes.xml`, so the
+/// content is filled in afterwards. Keeping it on the references lets
+/// package builds regenerate `footnotes.xml` from the document tree.
+pub(crate) fn store_document_footnotes(document: &mut Document, footnotes: &[Footnote]) {
+    struct FootnoteStore<'a> {
+        footnotes_by_id: HashMap<usize, &'a Footnote>,
+    }
+
+    impl DocumentTreeVisitor for FootnoteStore<'_> {
+        fn visit_run(&mut self, run: &mut Run) {
+            for child in &mut run.children {
+                if let RunChild::FootnoteReference(reference) = child {
+                    if let Some(footnote) = self.footnotes_by_id.get(&reference.id) {
+                        reference.content = footnote.content.clone();
+                    }
+                }
+            }
+        }
+    }
+
+    let mut store = FootnoteStore {
+        footnotes_by_id: footnotes.iter().map(|f| (f.id, f)).collect(),
+    };
+    visit_document(document, &mut store);
 }
 
 /// Collects package data from one header relationship scope.

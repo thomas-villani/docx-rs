@@ -87,7 +87,7 @@ use serde::{ser, Serialize};
 
 use self::image_collector::{
     collect_document_footnotes, collect_document_part, collect_footer_part, collect_header_part,
-    MediaRegistry,
+    store_document_footnotes, MediaRegistry,
 };
 
 #[derive(Debug, Clone)]
@@ -870,6 +870,9 @@ impl Docx {
             .collect();
 
         if !document_part.footnotes.is_empty() {
+            // Replace rather than extend: a read document already holds the
+            // footnotes that are collected again from its references.
+            self.footnotes = Footnotes::new();
             self.footnotes.add(document_part.footnotes);
             self.content_type = std::mem::take(&mut self.content_type).add_footnotes();
             self.document_rels.has_footnotes = true;
@@ -1150,6 +1153,11 @@ impl Docx {
 
     // Traverse and clone comments from document and add to comments node.
     // reader only
+    pub(crate) fn store_footnotes(&mut self, footnotes: Footnotes) {
+        store_document_footnotes(&mut self.document, &footnotes.footnotes);
+        self.footnotes = footnotes;
+    }
+
     pub(crate) fn store_comments(&mut self, comments: &[Comment]) {
         let comments_by_id: HashMap<usize, &Comment> = comments
             .iter()

@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and keep `hangingChars` / `firstLineChars` when reading numbering levels.
 - docx-wasm: add `indentChars({ startChars, endChars, hangingChars,
   firstLineChars })` to `Paragraph`, `Style`, and `Level`.
+- Read footnotes. `w:footnoteReference` was dropped on read and
+  `footnotes.xml` was never read, so footnote text was lost. References are
+  now read into runs, and `footnotes.xml` fills `Docx.footnotes` and each
+  reference's content. Separator and continuation notes are skipped.
+  Writing a read document no longer duplicates its footnotes.
+- docx-wasm: add `FootnoteReferenceJSON` and `DocxJSON.footnotes` types.
 
 ## @0.4.22 (21. Jul, 2026)
 

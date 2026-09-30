@@ -319,6 +319,20 @@ pub fn read_docx_with_options(buf: &[u8], options: ReadDocxOptions) -> Result<Do
         }
     }
 
+    // Read footnotes and store their content to the references.
+    // A missing or unreadable footnotes part only loses the notes.
+    if let Some((_, footnotes_path, ..)) = rels.target_paths(FOOTNOTES_TYPE).and_then(|p| p.first())
+    {
+        if let Ok(data) = read_zip(
+            &mut archive,
+            footnotes_path.to_str().expect("should have footnotes."),
+        ) {
+            if let Ok(footnotes) = Footnotes::from_xml(&data[..]) {
+                docx.store_footnotes(footnotes);
+            }
+        }
+    }
+
     // store comments to paragraphs.
     if !comments.inner().is_empty() {
         docx.store_comments(comments.inner());

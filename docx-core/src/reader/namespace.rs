@@ -11,6 +11,8 @@ pub(crate) const SETTINGS_TYPE: &str =
     "http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings";
 pub(crate) const COMMENTS_TYPE: &str =
     "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
+pub(crate) const FOOTNOTES_TYPE: &str =
+    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes";
 pub(crate) const WEB_SETTINGS_TYPE: &str =
     "http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings";
 pub(crate) const HEADER_TYPE: &str =
